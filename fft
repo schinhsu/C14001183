@@ -1,0 +1,115 @@
+#include <cstdlib>
+#include <iostream>
+#include <math.h>
+#include <time.h>
+
+using namespace std;
+
+const double pi = 2.0*acos(0);
+
+void sft(double *xR,double *xI,double *yR,double *yI, int N){
+	int i,j;
+	double wR,wI;
+	for (i=0;i<N;i++){
+		yR[i] = 0.0;
+		yI[i] = 0.0;
+		for (j=0;j<N;j++){
+			wR = cos(-i*j*2*M_PI/N);
+			wI = sin(-i*j*2*M_PI/N);
+			yR[i] += xR[j]*wR - xI[j]*wI; 
+			yI[i] += xR[j]*wI + xI[j]*wR;
+		}
+	}
+}
+
+void fft(double *xR,double *xI,double *yR,double *yI,int N){
+     int i,j,k,m;
+     for (i=0;i<N;i++){
+         yR[i] = xR[i];
+         yI[i] = xI[i];
+     }
+     j = N/2;
+     m = N/2;
+     double tmpR,tmpI;
+     
+     for (i=1;i<N-1;i++){
+         if (i<j){
+            tmpR = yR[i];
+            tmpI = yI[i];
+            yR[i] = yR[j];
+            yI[i] = yI[j];
+            yR[j] = tmpR;
+            yI[j] = tmpI;
+         }
+         k = m;
+         while (j>=k & k>0){
+               j-=k;
+               k>>=1;
+         }
+         j+=k;
+     }
+     double theta,wR,wI;
+     int n = 2;
+     while (n<=N){
+           for (k=0;k<n/2;k++){
+               theta = -2.0*k*M_PI/n;
+               wR = cos(theta);
+               wI = sin(theta);
+               for (i=k;i<N;i+=n){
+                   j = i+n/2;
+                   tmpR = wR*yR[j] - wI*yI[j];
+                   tmpI = wR*yI[j] + wI*yR[j];
+                   yR[j] = yR[i] - tmpR;
+                   yI[j] = yI[i] - tmpI;
+                   yR[i] += tmpR;
+                   yI[i] += tmpI;
+               }
+           }
+           n <<= 1;
+     }
+}
+
+int main(int argc, char *argv[])
+{
+    clock_t tic,toc;
+    int i,N,mul=1,x;
+    cin >> N;
+    x = N;
+    while(x/2 != 0){
+        x /= 2;
+        mul *= 2;
+    }
+    mul = (N%2==1)? mul*2 : mul;
+//    cout << mul << endl;
+    double *xR,*xI,*yR,*yI,*rR,*rI;
+    xR = (double*) malloc(mul*sizeof(double));
+    xI = (double*) malloc(mul*sizeof(double));
+    yR = (double*) malloc(mul*sizeof(double));
+    yI = (double*) malloc(mul*sizeof(double));
+    rR = (double*) malloc(mul*sizeof(double));
+    rI = (double*) malloc(mul*sizeof(double));
+    for (i=0;i!=N;i++){
+        xR[i] = i;
+        xI[i] = 0.0;
+    }
+    tic = clock();
+    sft(xR,xI,rR,rI,N);
+    toc = clock();
+    cout << "Time: " << 1.0 * (toc-tic)/CLOCKS_PER_SEC << endl;
+    for (i=N;i!=mul;i++){
+        xR[i] = 0.0;
+        xI[i] = 0.0;
+    }
+    tic = clock();
+    fft(xR,xI,yR,yI,mul);
+    toc = clock();
+    for (i=0;i!=mul;i++)
+       cout << yR[i] << " " << yI[i] << endl;
+    for (i=0;i!=N;i++){
+//       cout << yR[i] << " " << yI[i] << endl;
+       cout << rR[i] << " " << rI[i] << endl;
+    }
+    cout << "Time: " << 1.0 * (toc-tic)/CLOCKS_PER_SEC << endl;
+    system("PAUSE");
+    return EXIT_SUCCESS;
+}
