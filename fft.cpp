@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
 //        cout << i << " " << yR[i] << " " << yI[i] << endl;
           double compare1 = (rR[i]>yR[i]) ? rR[i]-yR[i] : yR[i]-rR[i];
           double compare2 = (rI[i]>yI[i]) ? rI[i]-yI[i] : yI[i]-rI[i];
-          if (compare1>pow(10,6) || compare2>pow(10,6)) cout << "Wrong " << i << endl;
+          if (compare1>pow(10,-4) || compare2>pow(10,-4)) cout << "Wrong " << i << endl;
     }
 */
     cout << "Time: " << 1.0 * (toc-tic)/CLOCKS_PER_SEC << endl;
